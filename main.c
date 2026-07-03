@@ -71,16 +71,18 @@ int main(void) {
     SDL_Renderer *renderer =
         scp(SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED));
 
+    SDL_Surface *font_surface =
+        surface_from_file("./charmap-oldschool_white.png");
 
-    // SDL_Texture *texture =
-    //     scp(SDL_CreateTexture(
-    //         renderer,
-    //         SDL_PIXELFORMAT_INDEX8,
-    //         SDL_TEXTUREACCESS_STATIC,
-    //         FONT_WIDTH,
-    //         FONT_HEIGHT,)
-    //     );
+    SDL_Texture *font_texture =
+        scp(SDL_CreateTextureFromSurface(renderer,font_surface));
 
+        SDL_Rect font_rect = {
+            .x = 0,
+            .y = 0,
+            .w = font_surface->w,
+            .h = font_surface->h,
+        };
     bool quit = false;
 
     while (!quit){
@@ -92,8 +94,15 @@ int main(void) {
             }
         }
 
-        scc(SDL_SetRenderDrawColor(renderer, 0, 100, 0, 0));
+        scc(SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0));
         scc(SDL_RenderClear(renderer));
+        SDL_Rect output_rect = {
+            .x = 0,
+            .y = 0,
+            .w = font_rect.w * 5,
+            .h = font_rect.h * 5,
+        };
+        scc(SDL_RenderCopy(renderer, font_texture, &font_rect, &output_rect));
         SDL_RenderPresent(renderer);
     }
 
