@@ -1,7 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL.h>
 #include <stdbool.h>
+#include <SDL.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "./stb_image.h"
+
+
+
 void scc(int code)
 {
     if (code < 0){
@@ -21,13 +27,59 @@ void *scp(void *ptr)
     return ptr;
 }
 
+SDL_Surface *surface_from_file(const char *file_path)
+{
+    int width, height, n;
+    unsigned char *pixels =
+        stbi_load(file_path, &width, &height, &n, STBI_rgb_alpha);
+
+    if (pixels == NULL){
+        fprintf(
+            stderr,
+            "ERROR: Could not load file %s: %s\n",
+            file_path,
+            stbi_failure_reason()
+        );
+        exit(1);
+    }
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    const Uint32 rmask = 0xff000000;
+    const Uint32 gmask = 0x00ff0000;
+    const Uint32 bmask = 0x0000ff00;
+    const Uint32 amask = 0x000000ff;
+#else
+    const Uint32 rmask = 0x000000ff;
+    const Uint32 gmask = 0x0000ff00;
+    const Uint32 bmask = 0x00ff0000;
+    const Uint32 amask = 0xff000000;
+#endif
+    const int depth = 32;
+    const int pitch = 4 * width;
+
+
+    return scp(SDL_CreateRGBSurfaceFrom(
+           (void *)pixels, width, height, depth, pitch,
+           rmask, gmask, bmask, amask));
+}
+
 int main(void) {
     scc(SDL_Init(SDL_INIT_VIDEO));
 
     SDL_Window *window =
-    scp(SDL_CreateWindow("Text Editor", 0, 0, 800, 600,SDL_WINDOW_RESIZABLE));
+      scp(SDL_CreateWindow("Text Editor", 0, 0, 800, 600,SDL_WINDOW_RESIZABLE));
     SDL_Renderer *renderer =
-    scp(SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED));
+        scp(SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED));
+
+
+    // SDL_Texture *texture =
+    //     scp(SDL_CreateTexture(
+    //         renderer,
+    //         SDL_PIXELFORMAT_INDEX8,
+    //         SDL_TEXTUREACCESS_STATIC,
+    //         FONT_WIDTH,
+    //         FONT_HEIGHT,)
+    //     );
 
     bool quit = false;
 
@@ -40,7 +92,7 @@ int main(void) {
             }
         }
 
-        scc(SDL_SetRenderDrawColor(renderer, 100, 0, 0, 0));
+        scc(SDL_SetRenderDrawColor(renderer, 0, 100, 0, 0));
         scc(SDL_RenderClear(renderer));
         SDL_RenderPresent(renderer);
     }
