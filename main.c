@@ -12,6 +12,7 @@
 #define FONT_ROWS 7
 #define FONT_CHAR_WIDTH  (FONT_WIDTH  / FONT_COLS)
 #define FONT_CHAR_HEIGHT (FONT_HEIGHT / FONT_ROWS)
+#define FONT_SCALE 5
 
 void scc(int code)
 {
@@ -146,7 +147,29 @@ void render_text(SDL_Renderer *renderer, Font *font,
 #define BUFFER_CAPACITY 1024
 
 char buffer[BUFFER_CAPACITY];
+
+size_t buffer_cursor = 0;
 size_t buffer_size = 0;
+
+#define UNHEX(color) \
+    ((color) >> (8 * 0)) & 0xFF,\
+    ((color) >> (8 * 1)) & 0xFF,\
+    ((color) >> (8 * 2)) & 0xFF,\
+    ((color) >> (8 * 3)) & 0xFF
+
+
+void render_cursor(SDL_Renderer *renderer, Uint32 color){
+    const SDL_Rect rect = {
+        .x = (int) floorf(buffer_cursor * FONT_CHAR_WIDTH * FONT_SCALE),
+        .y = 0,
+        .w = FONT_CHAR_WIDTH * FONT_SCALE,
+        .h = FONT_CHAR_HEIGHT * FONT_SCALE
+    };
+
+    scc(SDL_SetRenderDrawColor(renderer, UNHEX(color)));
+    scc(SDL_RenderFillRect(renderer, &rect));
+
+}
 
 int main(void) {
     scc(SDL_Init(SDL_INIT_VIDEO));
@@ -172,7 +195,11 @@ int main(void) {
                     case SDLK_BACKSPACE:{
                         if (buffer_size > 0){
                             buffer_size -= 1;
+                            buffer_cursor = buffer_size;
                         }
+                    } break;
+                    case SDLK_PLUS:{
+
                     } break;
                 }
             } break;
@@ -185,6 +212,7 @@ int main(void) {
                     }
                     memcpy(buffer + buffer_size, event.text.text, text_size);
                     buffer_size += text_size;
+                    buffer_cursor = buffer_size;
                 } break;
             }
         }
@@ -193,8 +221,8 @@ int main(void) {
         scc(SDL_RenderClear(renderer));
         render_text_sized(renderer, &font,
                     buffer, buffer_size,
-                    vec2f(0.0, 0.0), 0xffffffff, 5.0f );
-
+                    vec2f(0.0, 0.0), 0xffffffff, FONT_SCALE);
+        render_cursor(renderer, 0xFFFFFFFF);
         SDL_RenderPresent(renderer);
     }
 
