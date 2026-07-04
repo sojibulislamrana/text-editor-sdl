@@ -118,8 +118,8 @@ void render_char(SDL_Renderer *renderer, Font *font,
                        &font->glyph_table[index], &dst));
 }
 
-void render_text(SDL_Renderer *renderer, Font *font,
-    const char *text, Vec2f pos, Uint32 color, float scale)
+void render_text_sized(SDL_Renderer *renderer, Font *font,
+    const char *text, size_t text_size, Vec2f pos, Uint32 color, float scale)
 {
     scc(SDL_SetTextureColorMod(
         font->spritesheet,
@@ -130,13 +130,23 @@ void render_text(SDL_Renderer *renderer, Font *font,
 
     scc(SDL_SetTextureAlphaMod(font->spritesheet, (color >> (8* 3)) & 0xff));
 
-    const size_t n = strlen(text);
     Vec2f pen = pos;
-    for (size_t i = 0; i < n; i++){
+    for (size_t i = 0; i < text_size; i++){
         render_char(renderer, font, text[i], pen, scale);
         pen.x += FONT_CHAR_WIDTH * scale;
     }
 }
+
+void render_text(SDL_Renderer *renderer, Font *font,
+    const char *text, Vec2f pos, Uint32 color, float scale)
+{
+    render_text_sized(renderer, font, text, strlen(text), pos, color, scale);
+}
+
+#define BUFFER_CAPACITY 1024
+
+char buffer[BUFFER_CAPACITY];
+size_t buffer_size = 0;
 
 int main(void) {
     scc(SDL_Init(SDL_INIT_VIDEO));
@@ -162,8 +172,10 @@ int main(void) {
 
         scc(SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0));
         scc(SDL_RenderClear(renderer));
-        render_text(renderer, &font, "Hello, World",
-                    vec2f(0.0, 0.0), 0xff0000ff, 5.0f );
+        render_text_sized(renderer, &font,
+                    buffer, buffer_size,
+                    vec2f(0.0, 0.0), 0xffffffff, 5.0f );
+
         SDL_RenderPresent(renderer);
     }
 
