@@ -6,3 +6,4 @@ This is a text editor build with SDL in C
 <img src="./images/cover.png"/>
 
 Made with ♥︎ by `SOJIBUL ISLAM RANA`
+Inspired by `Tsoding`
