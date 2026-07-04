@@ -164,8 +164,18 @@ int main(void) {
         SDL_Event event = {0};
         while (SDL_PollEvent(&event)){
             switch (event.type){
-                case SDL_QUIT:{
+            case SDL_QUIT:{
                     quit = true;
+                } break;
+            case SDL_TEXTINPUT:{
+                    size_t text_size = strlen(event.text.text);
+                    const size_t free_space = BUFFER_CAPACITY - buffer_size;
+
+                    if (text_size > free_space){
+                        text_size = free_space;
+                    }
+                    memcpy(buffer + buffer_size, event.text.text, text_size);
+                    buffer_size += text_size;
                 } break;
             }
         }
