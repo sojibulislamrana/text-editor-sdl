@@ -167,6 +167,15 @@ int main(void) {
             case SDL_QUIT:{
                     quit = true;
                 } break;
+            case SDL_KEYDOWN:{
+                switch (event.key.keysym.sym){
+                    case SDLK_BACKSPACE:{
+                        if (buffer_size > 0){
+                            buffer_size -= 1;
+                        }
+                    } break;
+                }
+            } break;
             case SDL_TEXTINPUT:{
                     size_t text_size = strlen(event.text.text);
                     const size_t free_space = BUFFER_CAPACITY - buffer_size;
